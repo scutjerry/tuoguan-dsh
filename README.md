@@ -246,7 +246,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1 -IncludeInstallTest
 ```
 
-GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便携构建产物；推送 `v*` tag 时，发布 job 会重新构建、校验发布产物，并使用仓库中的 `NPM_TOKEN`（作为 `NODE_AUTH_TOKEN`）发布公开包，同时通过 GitHub OIDC 生成 provenance。
+GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便携构建产物；推送与 `package.json` 版本一致的 `v*` tag 时，发布 job 会重新构建、校验发布产物，并使用仓库中的 `NPM_TOKEN`（作为 `NODE_AUTH_TOKEN`）发布公开包，同时通过 GitHub OIDC 生成 provenance。
 
 ## 故障排查
 

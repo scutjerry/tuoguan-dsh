@@ -28,7 +28,7 @@ const installDirectory = path.join(
 );
 const executable = path.join(installDirectory, 'TuoguanDSH.exe');
 const installScript = path.join(root, 'install.ps1');
-const uninstallScript = path.join(installDirectory, 'uninstall.ps1');
+const uninstallScript = path.join(root, 'uninstall.ps1');
 const command = process.argv[2];
 
 if (command === '--help' || command === '-h' || command === 'help') {

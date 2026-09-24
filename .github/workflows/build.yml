@@ -42,8 +42,15 @@ jobs:
       - name: Build package
         shell: powershell
         run: ./build.ps1
-      - name: Verify publish artifacts
-        run: node ./scripts/check-dist.js
+      - name: Verify tag and publish artifacts
+        shell: powershell
+        run: |
+          $packageVersion = node -p "require('./package.json').version"
+          if ("v$packageVersion" -ne '${{ github.ref_name }}') {
+            throw "Tag ${{ github.ref_name }} does not match package version v$packageVersion."
+          }
+          node ./scripts/check-dist.js
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
       - name: Publish to npm
         run: npm publish --provenance --access public
         env:
