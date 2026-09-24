@@ -35,6 +35,13 @@ Assert-True ($sourceText -match 'ExitApplication') 'Source is missing the full-e
 $installText = Get-Content -LiteralPath (Join-Path $root 'install.ps1') -Raw
 Assert-True ($installText -notmatch 'Register-ScheduledTask|schtasks|CurrentVersion\\Run') 'Installer contains an auto-start registration mechanism.'
 
+$package = Get-Content -LiteralPath (Join-Path $root 'package.json') -Raw | ConvertFrom-Json
+Assert-True ($package.name -eq 'tuoguan-dsh') 'package.json has the wrong package name.'
+Assert-True ($package.scripts.postinstall -eq 'node ./scripts/npm-postinstall.js') 'package.json is missing the npm postinstall hook.'
+Assert-True ($package.scripts.preuninstall -eq 'node ./scripts/npm-preuninstall.js') 'package.json is missing the npm preuninstall hook.'
+Assert-True ($package.scripts.postuninstall -eq 'node ./scripts/npm-preuninstall.js') 'package.json is missing the npm postuninstall fallback hook.'
+Assert-True (Test-Path -LiteralPath (Join-Path $root 'scripts\cli.js') -PathType Leaf) 'The npm CLI entry is missing.'
+
 if ($IncludeInstallTest) {
     $testInstall = Join-Path $env:TEMP ('TuoguanDSH-Smoke-' + [Guid]::NewGuid().ToString('N'))
     try {

@@ -37,47 +37,47 @@
 ## 系统要求
 
 - Windows 10 或 Windows 11；
-- 已安装 Node.js；
-- 已通过 npm 全局安装 DSH：
+- 已安装 Node.js 和 npm；
+- 本机已有可正常使用的 DSH。
+
+> 本项目只负责托盘托管，不包含 DSH 本体。
+
+## npm 一键安装（推荐）
+
+打开 PowerShell、CMD 或 Windows Terminal，执行一条命令：
 
 ```powershell
-npm install -g @deepseek-ai/dsh
+npm install -g github:scutjerry/tuoguan-dsh
 ```
 
-安装后建议先确认：
+npm 会从 GitHub 获取项目，运行安装生命周期脚本，并自动：
+
+1. 安装或更新托盘程序到 `%LOCALAPPDATA%\Programs\TuoguanDSH`；
+2. 在桌面和开始菜单创建 `Tuoguan DSH` 快捷方式；
+3. 注册 `tuoguan-dsh` 命令；
+4. **不会**配置开机自启动、计划任务或 Windows 服务。
+
+安装后可以双击桌面上的 `Tuoguan DSH`，或者运行：
 
 ```powershell
-dsh --help
+tuoguan-dsh
 ```
 
-## 一行命令安装（推荐）
+### npm 卸载
 
-打开 **PowerShell**，执行：
+先清理托盘程序和快捷方式，再移除 npm 包：
+
+```powershell
+tuoguan-dsh uninstall
+npm uninstall -g tuoguan-dsh
+```
+
+之所以分成两步，是因为部分 npm 版本在全局卸载时不会执行包的卸载生命周期脚本；显式运行 `tuoguan-dsh uninstall` 可以确保清理完整。
+
+## PowerShell 在线安装（备选）
 
 ```powershell
 irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1 | iex
-```
-
-该命令会：
-
-1. 从 GitHub 下载本项目源码；
-2. 使用 Windows 自带的 .NET Framework C# 编译器构建托盘 EXE；
-3. 安装到 `%LOCALAPPDATA%\Programs\TuoguanDSH`；
-4. 在桌面和开始菜单创建“托管 DSH”快捷方式；
-5. **不会**配置开机自启动。
-
-安装后，双击桌面上的 **托管 DSH** 即可。
-
-### 安装后立即启动
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1))) -Launch
-```
-
-### 不创建桌面快捷方式
-
-```powershell
-& ([scriptblock]::Create((irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1))) -NoDesktopShortcut
 ```
 
 ## 手动安装
@@ -130,7 +130,14 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1
 ```
 
-或者从安装目录执行：
+如果通过 npm 安装，推荐执行：
+
+```powershell
+tuoguan-dsh uninstall
+npm uninstall -g tuoguan-dsh
+```
+
+也可以直接从安装目录执行：
 
 ```powershell
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Programs\TuoguanDSH\uninstall.ps1"
@@ -215,18 +222,7 @@ GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便�
 
 ### 状态显示“启动失败”
 
-确认以下命令可用：
-
-```powershell
-node --version
-dsh --help
-```
-
-如 DSH 未安装：
-
-```powershell
-npm install -g @deepseek-ai/dsh
-```
+确认 Node.js 与本机已有的 DSH 都可以正常运行，并打开托盘菜单中的“查看运行日志”获取详细错误。该托盘项目不负责安装或配置 DSH 本体。
 
 ### 端口 3080 已占用
 

@@ -1,0 +1,51 @@
+{
+  "name": "tuoguan-dsh",
+  "version": "1.0.0",
+  "description": "Windows system tray manager for an existing DeepSeek Harness installation",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/scutjerry/tuoguan-dsh.git"
+  },
+  "homepage": "https://github.com/scutjerry/tuoguan-dsh#readme",
+  "bugs": {
+    "url": "https://github.com/scutjerry/tuoguan-dsh/issues"
+  },
+  "os": [
+    "win32"
+  ],
+  "bin": {
+    "tuoguan-dsh": "scripts/cli.js"
+  },
+  "scripts": {
+    "build": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./build.ps1",
+    "test": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./tests/smoke-test.ps1",
+    "postinstall": "node ./scripts/npm-postinstall.js",
+    "preuninstall": "node ./scripts/npm-preuninstall.js",
+    "postuninstall": "node ./scripts/npm-preuninstall.js"
+  },
+  "files": [
+    "assets/",
+    "dist/",
+    "src/",
+    "scripts/",
+    "tests/",
+    "build.ps1",
+    "install.ps1",
+    "uninstall.ps1",
+    "LICENSE",
+    "README.md"
+  ],
+  "engines": {
+    "node": ">=16"
+  },
+  "keywords": [
+    "dsh",
+    "deepseek-harness",
+    "windows",
+    "system-tray",
+    "tray",
+    "process-manager"
+  ],
+  "private": false
+}
