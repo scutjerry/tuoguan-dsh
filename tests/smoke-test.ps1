@@ -39,8 +39,17 @@ $package = Get-Content -LiteralPath (Join-Path $root 'package.json') -Raw | Conv
 Assert-True ($package.name -eq 'tuoguan-dsh') 'package.json has the wrong package name.'
 Assert-True ($package.scripts.postinstall -eq 'node ./scripts/npm-postinstall.js') 'package.json is missing the npm postinstall hook.'
 Assert-True ($package.scripts.preuninstall -eq 'node ./scripts/npm-preuninstall.js') 'package.json is missing the npm preuninstall hook.'
-Assert-True ($package.scripts.postuninstall -eq 'node ./scripts/npm-preuninstall.js') 'package.json is missing the npm postuninstall fallback hook.'
+Assert-True (-not $package.scripts.postuninstall) 'package.json should not run the same uninstall hook twice.'
+Assert-True ($package.scripts.prepublishOnly -eq 'node ./scripts/check-dist.js') 'package.json is missing the prepublish artifact check.'
+Assert-True (-not $package.scripts.prepare) 'package.json must not build during npm git dependency preparation.'
+Assert-True ($package.engines.node -eq '>=18') 'package.json has the wrong minimum Node.js version.'
+Assert-True ($package.publishConfig.access -eq 'public') 'package.json is missing public publish access.'
 Assert-True (Test-Path -LiteralPath (Join-Path $root 'scripts\cli.js') -PathType Leaf) 'The npm CLI entry is missing.'
+Assert-True (Test-Path -LiteralPath (Join-Path $root 'scripts\check-dist.js') -PathType Leaf) 'The npm publish artifact check is missing.'
+
+$cliText = Get-Content -LiteralPath (Join-Path $root 'scripts\cli.js') -Raw
+Assert-True ($cliText -match "command === 'install'") 'The npm CLI is missing the manual install command.'
+Assert-True ($cliText -match "command === '--help'") 'The npm CLI is missing help output.'
 
 if ($IncludeInstallTest) {
     $testInstall = Join-Path $env:TEMP ('TuoguanDSH-Smoke-' + [Guid]::NewGuid().ToString('N'))

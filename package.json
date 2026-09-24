@@ -22,7 +22,7 @@
     "test": "powershell.exe -NoProfile -ExecutionPolicy Bypass -File ./tests/smoke-test.ps1",
     "postinstall": "node ./scripts/npm-postinstall.js",
     "preuninstall": "node ./scripts/npm-preuninstall.js",
-    "postuninstall": "node ./scripts/npm-preuninstall.js"
+    "prepublishOnly": "node ./scripts/check-dist.js"
   },
   "files": [
     "assets/",
@@ -37,7 +37,10 @@
     "README.md"
   ],
   "engines": {
-    "node": ">=16"
+    "node": ">=18"
+  },
+  "publishConfig": {
+    "access": "public"
   },
   "keywords": [
     "dsh",

@@ -44,13 +44,35 @@
 
 ## npm 一键安装（推荐）
 
-打开 PowerShell、CMD 或 Windows Terminal，执行一条命令：
+面向普通用户的三种安装方式按可靠性排序为：**npm registry（发布后）> GitHub tarball > PowerShell 在线安装脚本**。
+
+### 1. npm registry（发布后，最可靠）
+
+若已发布到 npm registry，使用：
 
 ```powershell
-npm install -g github:scutjerry/tuoguan-dsh
+npm install -g --allow-scripts=tuoguan-dsh tuoguan-dsh
 ```
 
-npm 会从 GitHub 获取项目，运行安装生命周期脚本，并自动：
+需要 `--allow-scripts=tuoguan-dsh`，以便 npm 允许运行本包的 `postinstall` 安装脚本；不需要 `--allow-remote`。
+
+### 2. GitHub tarball（当前推荐）
+
+当前可以直接从 GitHub 的 HTTPS tarball 安装：
+
+```powershell
+npm install -g --allow-scripts=tuoguan-dsh https://github.com/scutjerry/tuoguan-dsh/archive/refs/heads/main.tar.gz
+```
+
+该方式不需要 Git。npm 12 如果默认阻止远程 tarball，还需要加入 `--allow-remote=all`：
+
+```powershell
+npm install -g --allow-scripts=tuoguan-dsh --allow-remote=all https://github.com/scutjerry/tuoguan-dsh/archive/refs/heads/main.tar.gz
+```
+
+> ⚠️ **请勿使用** `npm install -g github:scutjerry/tuoguan-dsh`。`github:` 简写会调用 Git；在 npm 全局安装 git 依赖时，npm 还会为 git 依赖派生一个继承全局配置与 prefix 的 `npm install`，可能与外层安装互相 retire 文件，最终留下残缺的包。这是 npm 的全局 git 依赖安装行为，不是本项目的 C# 程序或安装脚本故障；请改用上面的 registry 或 HTTPS tarball 写法。
+
+npm 安装会运行生命周期脚本，并自动：
 
 1. 安装或更新托盘程序到 `%LOCALAPPDATA%\Programs\TuoguanDSH`；
 2. 在桌面和开始菜单创建 `Tuoguan DSH` 快捷方式；
@@ -61,6 +83,18 @@ npm 会从 GitHub 获取项目，运行安装生命周期脚本，并自动：
 
 ```powershell
 tuoguan-dsh
+```
+
+如果 npm 的安全策略跳过了生命周期脚本，但已经安装了 CLI，可以手动完成托盘程序与快捷方式安装：
+
+```powershell
+tuoguan-dsh install
+```
+
+查看命令帮助：
+
+```powershell
+tuoguan-dsh --help
 ```
 
 ### npm 卸载
@@ -74,13 +108,15 @@ npm uninstall -g tuoguan-dsh
 
 之所以分成两步，是因为部分 npm 版本在全局卸载时不会执行包的卸载生命周期脚本；显式运行 `tuoguan-dsh uninstall` 可以确保清理完整。
 
-## PowerShell 在线安装（备选）
+## PowerShell 在线安装（无 npm 兜底）
+
+这是上述可靠性顺序中的第三种方式，不依赖 npm，因此也不需要 `--allow-scripts`：
 
 ```powershell
 irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1 | iex
 ```
 
-## 手动安装
+## 从源码手动安装（开发者）
 
 ```powershell
 git clone https://github.com/scutjerry/tuoguan-dsh.git
@@ -210,9 +246,21 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1
 powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1 -IncludeInstallTest
 ```
 
-GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便携构建产物。
+GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便携构建产物；推送 `v*` tag 时，发布 job 会重新构建、校验发布产物，并使用仓库中的 `NPM_TOKEN`（作为 `NODE_AUTH_TOKEN`）发布公开包，同时通过 GitHub OIDC 生成 provenance。
 
 ## 故障排查
+
+### `npm error enoent ... syscall spawn git`
+
+这表示系统没有安装 Git，而 `github:` 简写必须调用 Git。不要为本项目改用该简写；直接使用上文的 npm registry 或 GitHub HTTPS tarball 命令，tarball 安装不需要 Git。
+
+### `Cannot find module ...\scripts\npm-postinstall.js`
+
+这通常是 npm 全局安装 git 依赖时，内外两层安装共享全局 prefix 并互相 retire 文件后留下了残缺包。它属于 npm 的全局 git 依赖安装行为，不是托盘程序或 `install.ps1` 的问题；请清理失败安装后，改用上文的 HTTPS tarball 写法。
+
+### `npm warn install-scripts`
+
+npm 11.16+ 正在收紧供应链安全默认值，需要通过 `--allow-scripts=tuoguan-dsh` 明确允许运行本包的安装脚本。npm 12 使用 HTTPS tarball 时，如果远程来源也被默认拦截，再加入 `--allow-remote=all`；若包已安装但脚本被跳过，可运行 `tuoguan-dsh install` 手动完成安装。
 
 ### 点击后没有图标
 
