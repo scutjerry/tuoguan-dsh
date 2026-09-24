@@ -97,7 +97,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
 双击桌面或开始菜单中的：
 
 ```text
-托管 DSH
+Tuoguan DSH
 ```
 
 启动后不会出现 CMD 窗口。Windows 可能把新图标放在任务栏右下角的 `^` 隐藏区域中；可将黑鱼图标拖到外面固定显示。
@@ -239,7 +239,9 @@ src/DSH-Tray.cs           WinForms 托盘程序源码
 assets/                   透明黑鱼图标与来源 SVG
 build.ps1                 可复现构建脚本
 install.ps1               本地安装脚本
-install-online.ps1        GitHub 一行安装入口
+install-online.ps1        PowerShell 在线安装入口
+package.json              npm 包元数据和生命周期脚本
+scripts/                  npm CLI、安装与卸载桥接脚本
 uninstall.ps1             卸载脚本
 tests/smoke-test.ps1      冒烟与安装/卸载测试
 docs/                     README 示意图
