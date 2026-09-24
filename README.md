@@ -1,0 +1,255 @@
+# 托管 DSH（Tuoguan DSH）
+
+![Windows](https://img.shields.io/badge/Windows-10%20%7C%2011-0078D4?logo=windows)
+![License](https://img.shields.io/badge/license-MIT-green)
+![Build](https://github.com/scutjerry/tuoguan-dsh/actions/workflows/build.yml/badge.svg)
+
+把 `dsh web` 变成一个真正的 Windows 系统托盘应用：点击快捷方式后，DSH 在后台隐藏运行；关闭 CMD、PowerShell 或 Windows Terminal 不会再把 DSH 一起关掉；需要停止时，从右下角托盘菜单选择“完全退出”。
+
+> 本项目不是 DeepSeek 官方组件。它是面向 Windows 的轻量托盘包装器，调用你本机已安装的 `@deepseek-ai/dsh`。
+
+![工作流程](docs/workflow.svg)
+
+## 功能
+
+- **一键启动**：点击桌面或开始菜单中的“托管 DSH”，立即启动托盘程序和 `dsh web`。
+- **无 CMD 窗口**：直接使用 `node.exe` 启动 DSH，不创建需要保留的命令行窗口。
+- **系统托盘常驻**：右下角显示透明背景的 DeepSeek Harness 黑鱼图标。
+- **中文右键菜单**：查看运行状态、打开网页、启动/恢复、重启、查看日志、完全退出。
+- **安全的进程所有权**：只会停止或重启本托盘自己创建的 DSH；如果端口 `3080` 已由其他 DSH 使用，不会误杀其他工作流。
+- **不会开机自启动**：安装器不创建计划任务、服务、注册表 `Run` 项或启动文件夹项。只有手动点击快捷方式才运行。
+- **异常可观测**：托盘日志和 DSH 输出保存在安装目录的 `logs` 文件夹。
+- **透明高清图标**：提供 16、20、24、32、40、48、64、128、256 像素的多尺寸 ICO。
+
+## 界面示意
+
+![托盘菜单示意](docs/tray-menu.svg)
+
+菜单顶部会根据情况显示：
+
+- `状态：DSH 正在运行（由本托盘管理）`
+- `状态：检测到其他实例正在运行`
+- `状态：DSH 未启动`
+- `状态：启动失败（可查看运行日志）`
+
+“完全退出托盘”使用红色强调；该操作会关闭托盘，并且只停止本托盘自己启动的 DSH。
+
+## 系统要求
+
+- Windows 10 或 Windows 11；
+- 已安装 Node.js；
+- 已通过 npm 全局安装 DSH：
+
+```powershell
+npm install -g @deepseek-ai/dsh
+```
+
+安装后建议先确认：
+
+```powershell
+dsh --help
+```
+
+## 一行命令安装（推荐）
+
+打开 **PowerShell**，执行：
+
+```powershell
+irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1 | iex
+```
+
+该命令会：
+
+1. 从 GitHub 下载本项目源码；
+2. 使用 Windows 自带的 .NET Framework C# 编译器构建托盘 EXE；
+3. 安装到 `%LOCALAPPDATA%\Programs\TuoguanDSH`；
+4. 在桌面和开始菜单创建“托管 DSH”快捷方式；
+5. **不会**配置开机自启动。
+
+安装后，双击桌面上的 **托管 DSH** 即可。
+
+### 安装后立即启动
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1))) -Launch
+```
+
+### 不创建桌面快捷方式
+
+```powershell
+& ([scriptblock]::Create((irm https://raw.githubusercontent.com/scutjerry/tuoguan-dsh/main/install-online.ps1))) -NoDesktopShortcut
+```
+
+## 手动安装
+
+```powershell
+git clone https://github.com/scutjerry/tuoguan-dsh.git
+cd tuoguan-dsh
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+如果系统执行策略阻止脚本，使用上面显式提供的 `-ExecutionPolicy Bypass` 即可；它只影响本次 PowerShell 进程，不会永久修改系统策略。
+
+## 使用教程
+
+### 1. 启动
+
+双击桌面或开始菜单中的：
+
+```text
+托管 DSH
+```
+
+启动后不会出现 CMD 窗口。Windows 可能把新图标放在任务栏右下角的 `^` 隐藏区域中；可将黑鱼图标拖到外面固定显示。
+
+### 2. 打开 Web GUI
+
+- 双击托盘黑鱼图标；或
+- 右键图标，选择“打开 DSH 网页”；或
+- 浏览器访问 <http://127.0.0.1:3080>。
+
+### 3. 重启
+
+右键图标，选择“重启托盘管理的 DSH”。只有本托盘启动的实例才能被重启；外部实例会被保护。
+
+### 4. 完全退出
+
+右键图标，选择：
+
+```text
+完全退出托盘（停止本托盘启动的 DSH）
+```
+
+这会同时退出托盘程序，并停止它自己启动的 DSH。关闭其他 CMD、PowerShell 或 Terminal 窗口不会影响托盘中的 DSH。
+
+## 卸载
+
+从仓库目录执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\uninstall.ps1
+```
+
+或者从安装目录执行：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Programs\TuoguanDSH\uninstall.ps1"
+```
+
+保留日志：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:LOCALAPPDATA\Programs\TuoguanDSH\uninstall.ps1" -KeepLogs
+```
+
+## 实现方式
+
+### 进程托管
+
+`TuoguanDSH.exe` 是一个基于 .NET Framework WinForms 的小型 `winexe`：
+
+1. 安装器创建手动快捷方式；
+2. 用户点击快捷方式后启动 `TuoguanDSH.exe`；
+3. 程序自动定位 `node.exe` 和 npm 全局目录下的 DSH `lib/bin.js`；
+4. 通过 `ProcessStartInfo` 直接运行：
+
+   ```text
+   node.exe <DSH安装目录>\lib\bin.js web
+   ```
+
+5. `UseShellExecute=false`、`CreateNoWindow=true`，因此不会显示 CMD；
+6. 托盘持有子进程对象，并重定向标准输出/错误到日志；
+7. 只有菜单中的“完全退出”或“重启”会操作托盘自己拥有的子进程。
+
+### 外部实例保护
+
+程序会探测 `127.0.0.1:3080`：
+
+- 如果端口空闲，启动并拥有新的 DSH；
+- 如果端口已被占用，显示“检测到其他实例”，但不终止、不重启、不接管该进程；
+- 这样可以避免影响另一个项目或工作流中正在运行的 DSH。
+
+### 单实例与托盘
+
+程序使用命名互斥锁避免重复托盘图标；WinForms `NotifyIcon` 提供菜单和状态提示。透明黑鱼图标同时嵌入 EXE 并作为快捷方式图标。
+
+### 隐私与本地数据
+
+本项目：
+
+- 不上传日志；
+- 不采集遥测；
+- 不读取 DSH 对话内容；
+- 不保存 Token 或 API Key；
+- 所有运行日志仅保存在本机安装目录的 `logs` 下。
+
+## 构建与测试
+
+构建：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\build.ps1
+```
+
+运行静态与构建冒烟测试：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1
+```
+
+包括安装/卸载测试：
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\tests\smoke-test.ps1 -IncludeInstallTest
+```
+
+GitHub Actions 会在 `windows-latest` 上自动构建和测试，并上传便携构建产物。
+
+## 故障排查
+
+### 点击后没有图标
+
+1. 点击任务栏右下角的 `^`；
+2. 检查任务管理器中是否存在 `TuoguanDSH.exe`；
+3. 查看 `%LOCALAPPDATA%\Programs\TuoguanDSH\logs\dsh-tray.log`。
+
+### 状态显示“启动失败”
+
+确认以下命令可用：
+
+```powershell
+node --version
+dsh --help
+```
+
+如 DSH 未安装：
+
+```powershell
+npm install -g @deepseek-ai/dsh
+```
+
+### 端口 3080 已占用
+
+托盘会保护已有实例，不会强制结束它。可以关闭原来的 `dsh web`，然后从托盘菜单选择“启动 DSH 服务”；也可以继续使用该外部实例。
+
+### 快捷方式图标未刷新
+
+Windows 资源管理器可能缓存旧图标。重新打开文件夹或重启资源管理器后会显示透明背景黑鱼图标。
+
+## 项目结构
+
+```text
+src/DSH-Tray.cs           WinForms 托盘程序源码
+assets/                   透明黑鱼图标与来源 SVG
+build.ps1                 可复现构建脚本
+install.ps1               本地安装脚本
+install-online.ps1        GitHub 一行安装入口
+uninstall.ps1             卸载脚本
+tests/smoke-test.ps1      冒烟与安装/卸载测试
+docs/                     README 示意图
+.github/workflows/         Windows CI
+```
+
+## License
+
+MIT

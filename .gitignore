@@ -1,0 +1,22 @@
+# Build output
+bin/
+obj/
+*.pdb
+
+# Runtime output
+logs/
+*.log
+
+# Local IDE / OS files
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Local test artifacts
+artifacts/
+tmp/

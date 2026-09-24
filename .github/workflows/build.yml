@@ -1,0 +1,26 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+jobs:
+  windows-build-and-test:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and smoke test
+        shell: powershell
+        run: ./tests/smoke-test.ps1
+      - name: Upload portable package
+        uses: actions/upload-artifact@v4
+        with:
+          name: TuoguanDSH-windows
+          path: |
+            dist/TuoguanDSH.exe
+            dist/dsh-fish.ico
+            install.ps1
+            uninstall.ps1
+            README.md
